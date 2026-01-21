@@ -1,97 +1,97 @@
 # House Pricing (Machine Learning)
 
-Progetto di Machine Learning per stimare il prezzo di immobili a partire da feature strutturate e semi-strutturate.  
-L’obiettivo è costruire una pipeline di **data preprocessing** robusta e confrontare diversi modelli per individuare la soluzione con le migliori performance.
+Machine Learning project to estimate real estate prices from structured and semi-structured features.  
+The goal is to build a robust **data preprocessing** pipeline and compare different models to identify the solution with the best performance.
 
 ---
 
-## 📌 Contenuto del progetto
+## 📌 Project contents
 
-- **Notebook principale**: contiene
-  - preprocessing completo (pulizia + feature engineering)
-  - creazione dei dataset `*_clean.csv`
-  - training e confronto modelli (Random Forest, Linear Regression, Lasso, Gradient Boosting)
-  - valutazione su holdout-test
+- **Main notebook**: includes
+  - complete preprocessing (cleaning + feature engineering)
+  - creation of `*_clean.csv` datasets
+  - model training and comparison (Random Forest, Linear Regression, Lasso, Gradient Boosting)
+  - evaluation on a holdout test set
 - **Dataset**
   - `train.csv`, `test.csv` (raw)
-  - `train_clean.csv`, `test_clean.csv` / oppure `X_clean.csv`, `y_clean.csv` (processed)
+  - `train_clean.csv`, `test_clean.csv` / or `X_clean.csv`, `y_clean.csv` (processed)
 - **Output**
-  - file di predizioni finali (es. `predicted_values_*.txt`)
+  - final prediction files (e.g., `predicted_values_*.txt`)
 
 ---
 
-## 🧠 Approccio
+## 🧠 Approach
 
 ### 1) Data Preprocessing / Feature Engineering
 
-Il dataset contiene variabili numeriche, categoriche e semi-strutturate (testuali).  
-Il preprocessing è stato sviluppato per rendere la pipeline riproducibile e ridurre errori dovuti a formati non uniformi.
+The dataset contains numerical, categorical, and semi-structured (text-like) variables.  
+Preprocessing was designed to make the pipeline reproducible and reduce errors due to non-uniform formats.
 
-Principali trasformazioni:
+Main transformations:
 
-**Parsing e normalizzazione feature semi-strutturate**
-- `car_parking`: estrazione del numero di posti auto, distinguendo (es.) garage vs shared parking e flag di missing.
-- `availability`: gestione di valori come `available` o `available from dd/mm/yyyy`, trasformati in indicatori e componenti temporali (anno/mese).
-- `condominium_fees`: conversione stringhe in numerico, gestione casi speciali (es. *no fees*).
-- `floor` / `total_floors_in_building`: parsing numerico e casi speciali (es. *ground floor*, *mezzanine*).
-- `energy_efficiency_class`: mapping in scala ordinale e flag missing.
-- `year_of_construction`: conversione numerica + feature derivata `building_age`.
+**Parsing and normalization of semi-structured features**
+- `car_parking`: extract the number of parking spots, distinguishing (e.g.) garage vs shared parking and adding a missing flag.
+- `availability`: handle values such as `available` or `available from dd/mm/yyyy`, transforming them into indicators and time components (year/month).
+- `condominium_fees`: convert strings to numeric values, handling special cases (e.g., *no fees*).
+- `floor` / `total_floors_in_building`: numeric parsing and special cases (e.g., *ground floor*, *mezzanine*).
+- `energy_efficiency_class`: map to an ordinal scale and add a missing flag.
+- `year_of_construction`: numeric conversion + derived feature `building_age`.
 
-**Feature engineering “semplice ma efficace”**
+**“Simple but effective” feature engineering**
 - `is_top_floor`, `floor_ratio`
-- `num_balconies` estratto da `other_features` (es. `"2 balconies"`)
+- `num_balconies` extracted from `other_features` (e.g., `"2 balconies"`)
 
-**Gestione delle feature multi-label (`other_features`)**
-- split su separatore `|` + correzioni di concatenazioni note
-- conversione in multi-hot encoding tramite `MultiLabelBinarizer`
+**Handling multi-label features (`other_features`)**
+- split on the `|` separator + fixes for known concatenation issues
+- conversion to multi-hot encoding via `MultiLabelBinarizer`
 
-**Encoding categorico**
-- One-Hot Encoding per `conditions` e `zone`
-- `handle_unknown="ignore"` per gestire categorie presenti solo nel test
+**Categorical encoding**
+- One-Hot Encoding for `conditions` and `zone`
+- `handle_unknown="ignore"` to manage categories that appear only in the test set
 
-**Imputazione valori mancanti**
-- imputazione con statistiche calcolate sul train (es. mediane) per evitare leakage.
+**Missing value imputation**
+- imputation using statistics computed on the training set (e.g., medians) to avoid leakage.
 
-Risultato: creazione di dataset finali **puliti e numerici**:
-- `train_clean.csv` / `test_clean.csv` (oppure `X_clean.csv` / `y_clean.csv`)
+Result: creation of final **clean, numeric** datasets:
+- `train_clean.csv` / `test_clean.csv` (or `X_clean.csv` / `y_clean.csv`)
 
 ---
 
-### 2) Training e confronto modelli
+### 2) Model training and comparison
 
-Dopo il preprocessing, i dati vengono splittati in:
+After preprocessing, the data is split into:
 - **Train**
-- **Holdout Test** (per confronto equo tra modelli)
+- **Holdout test** (for a fair comparison across models)
 
-Modelli allenati e confrontati:
-- **Linear Regression (OLS)** – baseline lineare
-- **Lasso (LassoCV)** – regolarizzazione + feature selection implicita
-- **Random Forest Regressor** – modello non lineare, robusto a feature eterogenee
-- **Gradient Boosting Regressor** – boosting per migliorare accuratezza
+Trained and compared models:
+- **Linear Regression (OLS)** – linear baseline
+- **Lasso (LassoCV)** – regularization + implicit feature selection
+- **Random Forest Regressor** – non-linear model, robust to heterogeneous features
+- **Gradient Boosting Regressor** – boosting to improve accuracy
 
-Per i modelli lineari viene utilizzato **StandardScaler** (in pipeline) per garantire scaling coerente.
+For linear models, **StandardScaler** is used (within a pipeline) to ensure consistent scaling.
 
-Metriche utilizzate sul test:
+Metrics used on the test set:
 - **RMSE** (root mean squared error)
 - **R²**
 
-Alla fine viene selezionato il modello con RMSE più basso come candidato “migliore”.
+Finally, the model with the lowest RMSE is selected as the “best” candidate.
 
 ---
 
-## ✅ Risultati
+## ✅ Results
 
-Nel notebook viene generata una tabella con RMSE e R² sul holdout-test per ogni modello, oltre a grafici comparativi.  
-Il modello migliore viene identificato automaticamente e (opzionalmente) usato per generare predizioni finali sul dataset di test.
+The notebook generates a table with RMSE and R² on the holdout test set for each model, along with comparison plots.  
+The best model is automatically identified and (optionally) used to generate final predictions on the test dataset.
 
 ---
 
-## ▶️ Come eseguire
+## ▶️ How to run
 
-### Requisiti
-Python 3.9+ consigliato.
+### Requirements
+Python 3.9+ recommended.
 
-Installa le dipendenze:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
